@@ -32,4 +32,7 @@ def get_current_user(authorization: str | None = Header(default=None)):
             detail="Invalid or expired access token",
         )
 
-    return response.user
+    return {
+    "user": response.user,
+    "access_token": access_token,
+    }
