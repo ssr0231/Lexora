@@ -1,7 +1,10 @@
 from fastapi import Depends, FastAPI
 
 from backend.app.auth import get_current_user
+from backend.app.schemas.client import ClientCreate
 from backend.app.supabase_client import get_supabase_client
+
+
 app = FastAPI()
 
 
@@ -19,6 +22,7 @@ def get_me(auth=Depends(get_current_user)):
         "email": user.email,
     }
 
+
 @app.get("/me/profile")
 def get_my_profile(auth=Depends(get_current_user)):
     user = auth["user"]
@@ -35,3 +39,21 @@ def get_my_profile(auth=Depends(get_current_user)):
     )
 
     return response.data
+
+
+@app.post("/clients")
+def create_client(
+    client: ClientCreate,
+    auth=Depends(get_current_user),
+):
+    access_token = auth["access_token"]
+
+    supabase = get_supabase_client(access_token)
+
+    response = (
+        supabase.table("clients")
+        .insert(client.model_dump())
+        .execute()
+    )
+
+    return response.data[0]
