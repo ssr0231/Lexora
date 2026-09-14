@@ -3,7 +3,7 @@ from fastapi import Depends, FastAPI
 from backend.app.auth import get_current_user
 from backend.app.schemas.client import ClientCreate
 from backend.app.supabase_client import get_supabase_client
-
+from backend.app.schemas.assignment import ClientAssignmentCreate
 
 app = FastAPI()
 
@@ -74,3 +74,20 @@ def list_clients(
     )
 
     return response.data
+
+@app.post("/client-assignments")
+def assign_client(
+    assignment: ClientAssignmentCreate,
+    auth=Depends(get_current_user),
+):
+    access_token = auth["access_token"]
+
+    supabase = get_supabase_client(access_token)
+
+    response = (
+        supabase.table("user_clients")
+        .insert(assignment.model_dump())
+        .execute()
+    )
+
+    return response.data[0]
