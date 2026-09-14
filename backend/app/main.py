@@ -57,3 +57,20 @@ def create_client(
     )
 
     return response.data[0]
+
+@app.get("/clients")
+def list_clients(
+    auth=Depends(get_current_user),
+):
+    access_token = auth["access_token"]
+
+    supabase = get_supabase_client(access_token)
+
+    response = (
+        supabase.table("clients")
+        .select("id, name, gstin, industry, description, created_at")
+        .order("created_at", desc=True)
+        .execute()
+    )
+
+    return response.data
