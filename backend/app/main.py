@@ -1,5 +1,4 @@
-from fastapi import Depends, FastAPI
-
+from fastapi import Depends, FastAPI, HTTPException
 from backend.app.auth import get_current_user
 from backend.app.schemas.client import ClientCreate
 from backend.app.supabase_client import get_supabase_client
@@ -50,13 +49,20 @@ def create_client(
 
     supabase = get_supabase_client(access_token)
 
-    response = (
-        supabase.table("clients")
-        .insert(client.model_dump())
-        .execute()
-    )
+    try:
+        response = (
+            supabase.table("clients")
+            .insert(client.model_dump())
+            .execute()
+        )
+    except Exception as error:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not allowed to create clients",
+        ) from error
 
     return response.data[0]
+
 
 @app.get("/clients")
 def list_clients(
