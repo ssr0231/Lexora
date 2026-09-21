@@ -3,6 +3,8 @@ from backend.app.auth import get_current_user
 from backend.app.schemas.client import ClientCreate
 from backend.app.supabase_client import get_supabase_client
 from backend.app.schemas.assignment import ClientAssignmentCreate
+from backend.app.schemas.document import DocumentCreate
+
 
 app = FastAPI()
 
@@ -97,3 +99,40 @@ def assign_client(
     )
 
     return response.data[0]
+
+@app.post("/documents")
+def create_document(
+    document: DocumentCreate,
+    auth=Depends(get_current_user),
+):
+    access_token = auth["access_token"]
+
+    supabase = get_supabase_client(access_token)
+
+    response = (
+        supabase.table("documents")
+        .insert(document.model_dump(mode="json"))
+        .execute()
+    )
+
+    return response.data[0]
+
+@app.get("/documents")
+def list_documents(
+    auth=Depends(get_current_user),
+):
+    access_token = auth["access_token"]
+
+    supabase = get_supabase_client(access_token)
+
+    response = (
+        supabase.table("documents")
+        .select(
+            "id, title, document_type, client_id, "
+            "source_url, storage_path, processing_status, created_at"
+        )
+        .order("created_at", desc=True)
+        .execute()
+    )
+
+    return response.data
