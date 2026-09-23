@@ -17,7 +17,7 @@ from backend.app.schemas.document import DocumentCreate, DocumentType
 from backend.app.supabase_client import get_supabase_client
 from backend.app.services.pdf_extractor import extract_text_from_pdf
 from backend.app.services.text_chunker import chunk_text
-
+from backend.app.services.embedding_service import generate_embedding
 
 app = FastAPI()
 
@@ -270,6 +270,7 @@ def upload_document(
             {
                 "document_id": document_record["id"],
                 "content": chunk,
+                "embedding": generate_embedding(chunk),
                 "page_number": None,
                 "chunk_index": index,
             }
